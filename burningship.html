@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      html, body {
+        height: 100%;
+      }
+      canvas {
+        width: 300px;
+        height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+
+    <script>
+      const canvas = document.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+
+      let xMin = -2.5, xMax = 1.0, yMin = -1.5, yMax = 0.7;
+
+      const width = canvas.width;
+      const height = canvas.height;
+
+      const r = new Array(width * height).fill(0),
+            g = new Array(width * height).fill(0),
+            b = new Array(width * height).fill(0);
+      
+      let clear = false;
+
+      setInterval(function () {
+        if (clear) {
+          r.fill(0);
+          g.fill(0);
+          b.fill(0);
+          clear = false;
+        }
+
+        plot(r, 50, width, height);
+        plot(g, 150, width, height);
+        plot(b, 250, width, height);
+
+        render(canvas, width, height, r, g, b);
+      }, 250);
+
+      function plot(values, depth, width, height) {
+        const N = Math.min(width, height);
+
+        const mx = 0.45, my = 0.5;
+        const range = 1.7;
+
+        let cx, cy, p0x, p0y, px, py;
+        
+        let i, j, k;
+
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < N; j++) {
+                p0x = 0;
+                p0y = 0;
+                cx = mx + 2 * range * (i / N - 0.5);
+                cy = my + 2 * range * (j / N - 0.5);
+                for (k = 0; k < depth; k++) {
+                    px = p0x * p0x - p0y * p0y - cx;
+                    py = 2 * Math.abs(p0x * p0y) - cy;
+
+                    p0x = px;
+                    p0y = py;
+
+                    if (px * px + py * py > 10) {
+                        break;
+                    }
+                }
+                values[j * N + i] = k;
+            }
+        }
+      }
+
+      function scale(x, min, max, a, b) {
+        return (b - a) * (x - min) / (max - min) + a;
+      }
+
+      function random(min, max) {
+        return min + (Math.random() * Math.abs(max - min));
+      }
+
+      function render(canvas, width, height, r, g, b) {
+        const rmax = Math.max(...r);
+        const gmax = Math.max(...g);
+        const bmax = Math.max(...b);
+        
+        for (let i = 0; i < width * height; i++) {
+            const ramt = Math.floor(Math.min(1, r[i] / (rmax / 4.5)) * 0xff);
+            const gamt = Math.floor(Math.min(1, g[i] / (gmax / 4.5)) * 0xff);
+            const bamt = Math.floor(Math.min(1, b[i] / (bmax / 4.5)) * 0xff);
+
+            ctx.fillStyle = `rgb(${ramt}, ${gamt}, ${bamt})`;
+
+            const py = Math.floor(i / width);
+            const px = i - py * width;
+
+            ctx.fillRect(px, py, 1, 1);
+        }
+      }
+
+      canvas.addEventListener('mouseup', function (e) {
+        const xmin = scale(e.clientX - width * 0.2, 0, width, xMin, xMax);
+        const xmax = scale(e.clientX + width * 0.2, 0, width, xMin, xMax);
+        const ymin = scale(e.clientY - height * 0.2, 0, height, yMin, yMax);
+        const ymax = scale(e.clientY + height * 0.2, 0, height, yMin, yMax);
+
+        xMin = xmin;
+        xMax = xmax;
+        yMin = ymin;
+        yMax = ymax;
+
+        clear = true;
+      });
+
+/*
+Create the burning ship fractal
+Whole ship        -w 1.7 -c 0.45 0.5
+First small ship  -w 0.04 -c 1.755 0.03
+Second small ship -w .04 -c 1.625 0.035
+Tiny ship in tail -w 0.005 -c 1.941 0.004
+Another small one -w 0.008 -c 1.861 0.005
+*/
+    </script>
+  </body>
+</html>

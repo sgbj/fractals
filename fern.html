@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      html, body {
+        height: 100%;
+      }
+      canvas {
+        width: 300px;
+        height: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+
+    <script>
+      const canvas = document.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+
+      let xMin = -2.1818, xMax = 2.6556, yMin = 9.95851, yMax = 0;
+
+      const width = canvas.width;
+      const height = canvas.height;
+
+      const r = new Array(width * height).fill(0),
+            g = new Array(width * height).fill(0),
+            b = new Array(width * height).fill(0);
+      
+      let clear = false;
+
+      setInterval(function () {
+        if (clear) {
+          r.fill(0);
+          g.fill(0);
+          b.fill(0);
+          clear = false;
+        }
+
+        plot(r, 100, width, height);
+        plot(g, 50000, width, height);
+        plot(b, 100, width, height);
+
+        render(canvas, width, height, r, g, b);
+      }, 250);
+
+      function plot(values, depth, width, height) {
+        let x = 0, y = 0;
+
+        for (let i = 0; i < depth; i++) {
+          if (Math.random() < 0.85){
+            x = 0.85 * x + 0.04 * y;
+            y = -0.04 * x + 0.85 * y + 1.6;
+          }
+          if (Math.random() < 0.07) {
+            x = 0.2 * x - 0.26 * y;
+            y = 0.23 * x + 0.22 * y + 1.6;
+          }
+          if (Math.random() < 0.07) {
+            x = -0.15 * x + 0.28 * y;
+            y = 0.26 * x + 0.24 * y + 0.44;
+          }
+          if (Math.random() < 0.01) {
+            x = 0;
+            y = 0.16 * y;
+          } 
+          
+          if (x < xMin || x > xMax || y > yMin || y < yMax)
+            continue;
+
+          const px = Math.floor(scale(x, xMin, xMax, 0, width));
+          const py = Math.floor(scale(y, yMin, yMax, 0, height));
+          const idx = py * width + px;
+
+          if (idx < 0 || idx >= width * height) 
+            continue;
+
+          values[idx]++;
+        }
+      }
+
+      function scale(x, min, max, a, b) {
+        return (b - a) * (x - min) / (max - min) + a;
+      }
+
+      function render(canvas, width, height, r, g, b) {
+        const rmax = Math.max(...r);
+        const gmax = Math.max(...g);
+        const bmax = Math.max(...b);
+        
+        for (let i = 0; i < width * height; i++) {
+            const ramt = Math.floor(Math.min(1, r[i] / (rmax / 4.0)) * 0xff);
+            const gamt = Math.floor(Math.min(1, g[i] / (gmax / 4.0)) * 0xff);
+            const bamt = Math.floor(Math.min(1, b[i] / (bmax / 4.0)) * 0xff);
+
+            ctx.fillStyle = `rgb(${ramt}, ${gamt}, ${bamt})`;
+
+            const py = Math.floor(i / width);
+            const px = i - py * width;
+
+            ctx.fillRect(px, py, 1, 1);
+        }
+      }
+
+      canvas.addEventListener('mouseup', function (e) {
+        const xmin = scale(e.clientX - width * 0.2, 0, width, xMin, xMax);
+        const xmax = scale(e.clientX + width * 0.2, 0, width, xMin, xMax);
+        const ymin = scale(e.clientY - height * 0.2, 0, height, yMin, yMax);
+        const ymax = scale(e.clientY + height * 0.2, 0, height, yMin, yMax);
+
+        xMin = xmin;
+        xMax = xmax;
+        yMin = ymin;
+        yMax = ymax;
+
+        clear = true;
+      });
+    </script>
+  </body>
+</html>
