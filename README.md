@@ -12,3 +12,5 @@ Simple HTML/JS implementations of common fractals.
 
   ![image](https://user-images.githubusercontent.com/5178445/236354203-630ca75d-afd6-4950-9cbd-b62d914dc701.png)
 * [Burning ship](https://batary.dev/fractals/burningship)
+
+  ![image](https://user-images.githubusercontent.com/5178445/236355722-1b61748d-b7b4-4ce3-8e26-a143053d55e5.png)
